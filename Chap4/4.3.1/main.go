@@ -15,8 +15,8 @@ import (
 func main() {
 	go func() {
 		w := new(app.Window)
-		w.Option(app.Title("Grouped checkbox"))
-		w.Option(app.Size(unit.Dp(400), unit.Dp(600)))
+		w.Option(app.Title("4.3.1-Spaced Radiobuttons"))
+		w.Option(app.Size(unit.Dp(400), unit.Dp(400)))
 		if err := run(w); err != nil {
 			log.Fatal(err)
 		}
@@ -24,69 +24,43 @@ func main() {
 	app.Main()
 }
 
-var (
-	selectAll widget.Bool
-	item1     widget.Bool
-	item2     widget.Bool
-	item3     widget.Bool
-)
-
-func updateSelectAll() {
-	if item1.Value && item2.Value && item3.Value {
-		selectAll.Value = true
-	} else {
-		selectAll.Value = false
-	}
-}
-
-func toggleAll() {
-	if selectAll.Value {
-		item1.Value, item2.Value, item3.Value = true, true, true
-	} else {
-		item1.Value, item2.Value, item3.Value = false, false, false
-	}
-}
-
-func layoutGroupedCheckboxes(gtx layout.Context, th *material.Theme) layout.Dimensions {
-	return layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			dims := material.CheckBox(th, &selectAll, "Select All").Layout(gtx)
-			if selectAll.Value {
-				toggleAll()
-			} else {
-				updateSelectAll()
-			}
-			return dims
-		}),
-		layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-			dims := layout.Flex{Axis: layout.Vertical}.Layout(gtx,
-				layout.Rigid(material.CheckBox(th, &item1, "Item 1").Layout),
-				layout.Rigid(material.CheckBox(th, &item2, "Item 2").Layout),
-				layout.Rigid(material.CheckBox(th, &item3, "Item 3").Layout),
-			)
-			clicked := item1.Value || item2.Value || item3.Value
-			if clicked {
-				updateSelectAll()
-			}
-			return dims
-		}),
-	)
-}
-
 func run(w *app.Window) error {
+	th := material.NewTheme()
+	var selectedOption widget.Enum
 	var ops op.Ops
-	theme := material.NewTheme()
 
 	for {
 		switch e := w.Event().(type) {
-		case app.FrameEvent:
-			gtx := app.NewContext(&ops, e)
-			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-				return layoutGroupedCheckboxes(gtx, theme)
-			})
-			e.Frame(gtx.Ops)
 		case app.DestroyEvent:
 			os.Exit(0)
+		case app.FrameEvent:
+			gtx := app.NewContext(&ops, e)
+
+			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+				return layout.Flex{Axis: layout.Vertical, Spacing: layout.SpaceBetween}.Layout(gtx,
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Inset{Bottom: unit.Dp(10)}.Layout(gtx,
+							material.Body1(th, "Select a Theme:").Layout,
+						)
+					}),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Inset{Bottom: unit.Dp(5)}.Layout(gtx,
+							material.RadioButton(th, &selectedOption, "light", "Light Mode").Layout,
+						)
+					}),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Inset{Bottom: unit.Dp(5)}.Layout(gtx,
+							material.RadioButton(th, &selectedOption, "dark", "Dark Mode").Layout,
+						)
+					}),
+					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
+						return layout.Inset{Bottom: unit.Dp(5)}.Layout(gtx,
+							material.RadioButton(th, &selectedOption, "auto", "Auto Mode").Layout,
+						)
+					}),
+				)
+			})
+			e.Frame(gtx.Ops)
 		}
 	}
 }
