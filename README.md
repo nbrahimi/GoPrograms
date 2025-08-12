@@ -10,3 +10,4 @@ These are the code used throughout the chapters my book [Gio UI By Examples](htt
 **Chap9** - Creating custom widgets  
 **Chap10** - Building tabbed interfaces  
 
+If the list of chapters is not complete, come again later to find the full list. I'm copying the files little by little 
